@@ -60,9 +60,9 @@ step "run-a-script" {
                 $Header =  @{ "X-Octopus-ApiKey" = $apiKey }
                 
                 # Release variables
-                $projectName = "#{Octopus.Project.Id}"
+                $projectName = "#{Octopus.Project.Name}"
                 $releaseVersion = "#{Octopus.Release.Number}"
-                $environmentName = "#{Octopus.Environment.Id}"
+                $environmentName = "#{Octopus.Environment.Name}"
                 
                 # Set variables to hold Id values
                 Write-Verbose "HTTP GET $octopusUrl/api/projects?name=$projectName"
