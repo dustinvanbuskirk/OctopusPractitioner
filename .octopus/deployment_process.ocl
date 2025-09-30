@@ -64,7 +64,7 @@ step "run-a-script" {
                     $cancelledTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.State -match "Cancel" -and $_.Description -like "*release $releaseVersion*" }
                     
                     if ($cancelledTasks) {
-                    Write-Versbose -Message "List of Cancelled tasks: $cancelledTasks"
+                    Write-Verbose -Message "List of Cancelled tasks: $cancelledTasks"
                 
                     # Provide Cancelled task count
                     Write-Output "There are $($cancelledTasks.Id.Count) Cancelled tasks for $projectName release $releaseVersion to $environmentName"
