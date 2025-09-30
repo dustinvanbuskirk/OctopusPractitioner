@@ -38,10 +38,10 @@ step "run-a-script" {
                     } catch {
                         Write-Verbose "$Label (string): $Object"
                     }
-                } catch {
+                } 
+                catch {
                         Write-Verbose "$Label (string): $Object"
                     }
-                }
                 
                 try {
                         $json = $Object | ConvertTo-Json -Depth $Depth -Compress
