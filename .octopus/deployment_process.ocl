@@ -36,18 +36,18 @@ step "run-a-script" {
                 try {
                         $json = $Object | ConvertTo-Json -Depth $Depth -Compress
                         Write-Verbose "$Label (json): $json"
-                    } catch {
+                    } 
+                catch {
                         Write-Verbose "$Label (string): $Object"
                     }
-                }
                 
                 try {
                         $json = $Object | ConvertTo-Json -Depth $Depth -Compress
                         Write-Verbose "$Label (json): $json"
-                    } catch {
+                    } 
+                catch {
                         Write-Verbose "$Label (string): $Object"
                     }
-                }
                 
                 try {
                 $ErrorActionPreference = "Stop";
@@ -71,7 +71,7 @@ step "run-a-script" {
                 $environmentId = ((Invoke-RestMethod -Verbose -Method Get -Uri "$octopusUrl/api/Environments?name=$environmentName" -Headers $header).Items).Id
                 
                 # Get tasks
-                Try
+                try
                 {
                     # Fetch cancelled tasks for project and release
                 Write-Verbose "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
