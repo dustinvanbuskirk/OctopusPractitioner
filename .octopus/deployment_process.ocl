@@ -51,7 +51,7 @@ step "run-a-script" {
                         $Tasks,
                         [Parameter(Mandatory=$true)][string] $ProjectName,
                         [Parameter(Mandatory=$true)][string] $ReleaseVersion,
-                        [Parameter(Mandatory=$true)][string] $EnvironmentName
+                        [Parameter(Mandatory=$true)][string] $EnvironmentName,
                         [Parameter(Mandatory=$true)][string] $TaskType
                     )
                     process {
