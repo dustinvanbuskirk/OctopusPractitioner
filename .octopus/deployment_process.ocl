@@ -15,13 +15,16 @@ step "run-a-script" {
                 $Header =  @{ "X-Octopus-ApiKey" = $apiKey }
                 
                 # Release variables
-                $projectName = "#{Octopus.Project.Name}"
+                $projectName = "#{Octopus.Project.Id}"
                 $releaseVersion = "#{Octopus.Release.Number}"
-                $environmentName = "#{Octopus.Environment.Name}"
+                $environmentName = "#{Octopus.Environment.Id}"
                 
                 # Set variables to hold Id values
                 $projectId = ((Invoke-RestMethod -Method Get -Uri "$octopusUrl/api/projects?name=$projectName" -Headers $header).Items).Id
                 $environmentId = ((Invoke-RestMethod -Method Get -Uri "$octopusUrl/api/Environments?name=$environmentName" -Headers $header).Items).Id
+                
+                Write-Output $projectId
+                Write-Output $environmentId
                 
                 # Get tasks
                 Try
