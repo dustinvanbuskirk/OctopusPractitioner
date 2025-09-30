@@ -65,7 +65,7 @@ step "run-a-script" {
                     
                     if ($cancelledTasks) {
                 
-                    Write-Verbose "List of Cancelled tasks $cancelledTasks"
+                    Write-Verbose "List of Cancelled tasks $($cancelledTasks)"
                 
                     # Provide Cancelled task count
                     Write-Output "There are $($cancelledTasks.Id.Count) Cancelled tasks for $projectName release $releaseVersion to $environmentName"
