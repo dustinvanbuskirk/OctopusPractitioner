@@ -36,9 +36,7 @@ step "run-a-script" {
                     
                 }
                 
-                try {
-                        Write-Verbose "$Label (string): $Object"
-                    }
+                Write-Verbose "$Label (string): $Object"
                 
                 $ErrorActionPreference = "Stop";
                 
@@ -60,7 +58,7 @@ step "run-a-script" {
                 Write-Verbose "HTTP GET $octopusUrl/api/Environments?name=$environmentName"
                 $environmentId = ((Invoke-RestMethod -Verbose -Method Get -Uri "$octopusUrl/api/Environments?name=$environmentName" -Headers $header).Items).Id
                 
-                # Get tasks
+                # Query API for Task Details, Filter and Process.
                 try {
                     # Fetch cancelled tasks for project and release
                 Write-Verbose "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
