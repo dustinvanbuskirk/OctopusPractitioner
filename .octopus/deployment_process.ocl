@@ -23,8 +23,8 @@ step "run-a-script" {
                 $projectId = ((Invoke-RestMethod -Method Get -Uri "$octopusUrl/api/projects?name=$projectName" -Headers $header).Items).Id
                 $environmentId = ((Invoke-RestMethod -Method Get -Uri "$octopusUrl/api/Environments?name=$environmentName" -Headers $header).Items).Id
                 
-                Write-Output $projectId
-                Write-Output $environmentId
+                Write-Output "$projectId"
+                Write-Output "$environmentId"
                 
                 # Get tasks
                 Try
