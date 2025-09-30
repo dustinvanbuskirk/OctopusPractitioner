@@ -24,11 +24,21 @@ step "run-a-script" {
                 
                 # Helper to pretty-print objects safely
                 function Write-DebugObject {
-                    param([Parameter(ValueFromPipeline=$true)]$Object, [int]$Depth = 3, [string]$Label = "Object")
+                    param(
+                        [Parameter(ValueFromPipeline=$true)]$Object,
+                        [int]$Depth,
+                        [string]$Label
+                    )
+                    if (-not $PSBoundParameters.ContainsKey('Depth') -or $null -eq $Depth) { $Depth = 3 }
+                    if (-not $PSBoundParameters.ContainsKey('Label') -or [string]::IsNullOrEmpty($Label)) { $Label = "Object" }
+                
                     try {
                         $json = $Object | ConvertTo-Json -Depth $Depth -Compress
                         Write-Verbose "$Label (json): $json"
                     } catch {
+                        Write-Verbose "$Label (string): $Object"
+                    }
+                } catch {
                         Write-Verbose "$Label (string): $Object"
                     }
                 }
@@ -93,7 +103,7 @@ step "run-a-script" {
                     Write-Output "There are $($failedTasks.Count) failed tasks for $projectName release $releaseVersion to $environmentName"
                 
                     # Count failed tasks and prepare to cancel scheduled deployments if threshold met
-                    If(($failedTasks.Id).Count -ge 3)
+                    if(($failedTasks.Id).Count -ge 3)
                     {
                         # Filter scheduled tasks
                         $scheduledTasks = $allTasks | Where-Object { $_.State -eq "Queued" -and $_.HasBeenPickedUpByProcessor -eq $false -and $_.Name -eq "Deploy" -and $_.Description -like "*release $releaseVersion*" }
@@ -110,13 +120,13 @@ step "run-a-script" {
                             }
                         }
                     }
-                    Else
+                    else
                     {
                         Write-Output "Number of failed deployments for $projectName release $releaseVersion to $env is below the threshold (found $($failedTasks.Count), threshold is 3). No scheduled tasks will be cancelled."
                         break
                     }
                 }
-                Catch
+                catch
                 {
                     Write-Error -Message "No deployments found for $projectName release $releaseVersion to $environmentName. Nothing to action."
                     break
