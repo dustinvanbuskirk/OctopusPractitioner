@@ -21,7 +21,7 @@ process {
                     $ErrorActionPreference = "Stop";
                     
                     # Connection Variables
-                    $apiKey = "#{apiKey}"
+                    $apiKey = "#{Project.Runbook.Api.Key}"
                     $octopusUrl = "#{octopusUrl}"
                     
                     # Do Not Change
