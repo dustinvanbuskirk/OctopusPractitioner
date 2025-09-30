@@ -62,7 +62,7 @@ step "run-a-script" {
                     # Fetch cancelled tasks for project and release
                 Write-Verbose "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
                     $cancelledTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.State -match "Cancel" -and $_.Description -like "*release $releaseVersion*" }
-                    Write-Output "There are $(($cancelledTasks.Id).Count) cancelled tasks for $projectName release $releaseVersion to $environmentName"
+                    Write-Output "There are $(($cancelledTasks).Count) cancelled tasks for $projectName release $releaseVersion to $environmentName"
                     if(($cancelledTasks.Id).Count -ge 0){
                     # Filter last cancelled task
                     $lastCancelledTask = ($cancelledTasks).Id | Sort-Object { [int]($_.Id -replace "[^0-9]", "") } -Descending | Select-Object -First 1
@@ -102,7 +102,7 @@ step "run-a-script" {
                     }
                 }
                 catch {
-                    Write-Warning -Message "No deployments found for $projectName release $releaseVersion to $environmentName. Nothing to action."
+                    Write-Warning -Message "No !Failed! deployments found for $projectName release $releaseVersion to $environmentName. Nothing to action."
                     Write-Warning ("Warning: " + $_)
                     if ($_.InvocationInfo) { Write-Error ("At: " + $_.InvocationInfo.PositionMessage) }
                     if ($_.Exception.Response -and ($_.Exception.Response -is [System.Net.HttpWebResponse])) {
