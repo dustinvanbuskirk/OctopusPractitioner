@@ -245,9 +245,9 @@ step "verify-application" {
     action {
         action_type = "Octopus.Script"
         properties = {
-            Octopus.Action.Script.ScriptBody = "Write-Host \"This application has been verified.\""
+            Octopus.Action.Script.ScriptBody = "exit 1"
             Octopus.Action.Script.ScriptSource = "Inline"
-            Octopus.Action.Script.Syntax = "PowerShell"
+            Octopus.Action.Script.Syntax = "Bash"
             OctopusUseBundledTooling = "False"
         }
         worker_pool = "hosted-windows"
