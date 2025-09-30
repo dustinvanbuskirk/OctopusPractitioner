@@ -14,7 +14,7 @@ step "run-octopus-deploy-runbook" {
             Run.Runbook.Environment.Name = "#{Octopus.Environment.Name}"
             Run.Runbook.Machines = "N/A"
             Run.Runbook.ManualIntervention.EnvironmentToUse = "#{Octopus.Environment.Name}"
-            Run.Runbook.Name = "Script Test"
+            Run.Runbook.Name = "script-test"
             Run.Runbook.Project.Name = "#{Octopus.Project.Name}"
             Run.Runbook.Space.Name = "#{Octopus.Space.Name}"
             Run.Runbook.UsePublishedSnapShot = "True"
