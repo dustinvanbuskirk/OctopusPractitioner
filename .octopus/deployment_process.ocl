@@ -20,23 +20,26 @@ step "run-a-script" {
                 
                 Write-Verbose "=== Starting script: $(Split-Path -Leaf $PSCommandPath) ==="
                 Write-Verbose ("PowerShell Version: " + $PSVersionTable.PSVersion.ToString())
-                Write-Verbose ("Invocation args: " + ($MyInvocation.UnboundArguments -join ' '))
+                Write-Verbose ("Invocation args: " + ($MyInvocation.UnboundArguments -join " "))
                 
-                # Helper to pretty-print objects safely
-                # Helper to pretty-print objects safely
+                # Helper to pretty-print objects safely (strict-mode friendly)
                 function Write-DebugObject {
+                    [CmdletBinding()]
                     param(
-                        [Parameter(ValueFromPipeline=$true)]$Object,
-                        [int]$Depth,
-                        [string]$Label
+                        [Parameter(ValueFromPipeline=$true)]
+                        $InputObject,
+                        [int] $Depth = 3,
+                        [string] $Label = "Object"
                     )
-                    if (-not $PSBoundParameters.ContainsKey('Depth') -or $null -eq $Depth) { $Depth = 3 }
-                    if (-not $PSBoundParameters.ContainsKey('Label') -or [string]::IsNullOrEmpty($Label)) { $Label = "Object" }
-                
-                    
+                    process {
+                        try {
+                            $json = $InputObject | ConvertTo-Json -Depth $Depth -Compress
+                            Write-Verbose ("{0} (json): {1}" -f $Label, $json)
+                        } catch {
+                            Write-Verbose ("{0} (string): {1}" -f $Label, $InputObject)
+                        }
+                    }
                 }
-                
-                Write-Verbose "$Label (string): $Object"
                 
                 $ErrorActionPreference = "Stop";
                 
@@ -66,7 +69,7 @@ step "run-a-script" {
                     Write-Output "There are $($cancelledTasks.Count) cancelled tasks for $projectName release $releaseVersion to $environmentName"
                 
                     # Filter last cancelled task
-                    $lastCancelledTask = ($cancelledTasks).Id | Sort-Object { [int]($_.Id -replace '[^0-9]', '') } -Descending | Select-Object -First 1
+                    $lastCancelledTask = ($cancelledTasks).Id | Sort-Object { [int]($_.Id -replace "[^0-9]", "") } -Descending | Select-Object -First 1
                     Write-Output "The last cancelled task for $projectName release $releaseVersion to $environmentName is $lastCancelledTask"
                 
                     # Fetch all tasks for project and release since last cancellation
