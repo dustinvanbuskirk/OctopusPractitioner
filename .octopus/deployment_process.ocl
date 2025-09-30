@@ -51,9 +51,11 @@ step "run-a-script" {
                 $Header =  @{ "X-Octopus-ApiKey" = $apiKey }
                 
                 # Release variables
-                $projectId = "#{Octopus.Project.Id}"
-                $releaseVersion = "#{Octopus.Release.Number}"
                 $environmentId = "#{Octopus.Environment.Id}"
+                $environmentName = "#{Octopus.Environment.Name}"
+                $projectId = "#{Octopus.Project.Id}"
+                $projectName = "#{Octopus.Project.Name}"
+                $releaseVersion = "#{Octopus.Release.Number}"
                 
                 # Query API for Task Details, Filter and Process.
                 try {
