@@ -80,7 +80,7 @@ step "run-a-script" {
                         }
                 
                         # Filter last Cancelled task
-                        $lastCancelledTask = ($cancelledTasks).Id | Sort-Object { [int]($_.Id -replace "[^0-9]", "") } -Descending | Select-Object -First 1
+                        $lastCancelledTask = ($cancelledTasks) | Sort-Object { [int]($_.Id -replace "[^0-9]", "") } -Descending | Select-Object -First 1
                         Write-Output "The last Cancelled task for $projectName release $releaseVersion to $environmentName is $lastCancelledTask"
                 
                         # Fetch all tasks for project and release since last cancellation
