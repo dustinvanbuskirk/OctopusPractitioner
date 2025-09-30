@@ -23,6 +23,7 @@ step "run-a-script" {
                 Write-Verbose ("Invocation args: " + ($MyInvocation.UnboundArguments -join ' '))
                 
                 # Helper to pretty-print objects safely
+                # Helper to pretty-print objects safely
                 function Write-DebugObject {
                     param(
                         [Parameter(ValueFromPipeline=$true)]$Object,
@@ -32,38 +33,21 @@ step "run-a-script" {
                     if (-not $PSBoundParameters.ContainsKey('Depth') -or $null -eq $Depth) { $Depth = 3 }
                     if (-not $PSBoundParameters.ContainsKey('Label') -or [string]::IsNullOrEmpty($Label)) { $Label = "Object" }
                 
-                    try {
-                        $json = $Object | ConvertTo-Json -Depth $Depth -Compress
-                        Write-Verbose "$Label (json): $json"
-                    } 
                     
-                    catch {
-                        Write-Verbose "$Label (string): $Object"
-                    }
-                } 
-                
-                catch {
-                        Write-Verbose "$Label (string): $Object"
-                    }
+                }
                 
                 try {
-                        $json = $Object | ConvertTo-Json -Depth $Depth -Compress
-                        Write-Verbose "$Label (json): $json"
-                    } 
-                catch {
+                 
+                
+                # STRAY_CATCH_REMOVED # catch {
                         Write-Verbose "$Label (string): $Object"
                     }
                 
-                try {
-                        $json = $Object | ConvertTo-Json -Depth $Depth -Compress
-                        Write-Verbose "$Label (json): $json"
-                    } 
                 
-                catch {
-                        Write-Verbose "$Label (string): $Object"
-                    }
                 
-                try {
+                
+                
+                {
                 $ErrorActionPreference = "Stop";
                 
                 # Connection Variables
@@ -86,7 +70,7 @@ step "run-a-script" {
                 }
                 
                 # Get tasks
-                try {
+                {
                     # Fetch cancelled tasks for project and release
                 Write-Verbose "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
                     $cancelledTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.State -match "Cancel" -and $_.Description -like "*release $releaseVersion*" }
@@ -130,11 +114,24 @@ step "run-a-script" {
                         break
                     }
                 }
-                catch {
+                # STRAY_CATCH_REMOVED # catch {
                     Write-Error -Message "No deployments found for $projectName release $releaseVersion to $environmentName. Nothing to action."
                     break
                 }
                 
+                # STRAY_CATCH_REMOVED # catch {
+                    Write-Error ("ERROR: " + $_)
+                    if ($_.InvocationInfo) { Write-Error ("At: " + $_.InvocationInfo.PositionMessage) }
+                    if ($_.Exception.Response -and ($_.Exception.Response -is [System.Net.HttpWebResponse])) {
+                        $resp = $_.Exception.Response
+                        Write-Error ("HTTP Status: " + [int]$resp.StatusCode + " " + $resp.StatusDescription)
+                        try { $reader = New-Object System.IO.StreamReader($resp.GetResponseStream()); $body = $reader.ReadToEnd(); Write-Error ("Response body: " + $body) } catch {}
+                    }
+                    throw
+                }
+                
+                
+                }
                 catch {
                     Write-Error ("ERROR: " + $_)
                     if ($_.InvocationInfo) { Write-Error ("At: " + $_.InvocationInfo.PositionMessage) }
@@ -142,22 +139,22 @@ step "run-a-script" {
                         $resp = $_.Exception.Response
                         Write-Error ("HTTP Status: " + [int]$resp.StatusCode + " " + $resp.StatusDescription)
                         try {
-                    $body = ""
-                    $stream = $resp.GetResponseStream()
-                    if ($null -ne $stream) {
-                        $reader = New-Object System.IO.StreamReader($stream)
-                        try { $body = $reader.ReadToEnd() } finally { $reader.Dispose() }
+                            $body = ""
+                            $stream = $resp.GetResponseStream()
+                            if ($null -ne $stream) {
+                                $reader = New-Object System.IO.StreamReader($stream)
+                                try { $body = $reader.ReadToEnd() } finally { $reader.Dispose() }
+                            }
+                            if ($body) { Write-Error ("Response body: " + $body) } else { Write-Verbose "Response body empty or unreadable." }
+                        } catch {
+                            Write-Verbose ("Failed to read response body: " + $_.Exception.Message)
+                        }
                     }
-                    if ($body) { Write-Error ("Response body: " + $body) } else { Write-Verbose "Response body empty or unreadable." }
-                } catch {
-                    Write-Verbose ("Failed to read response body: " + $_.Exception.Message)
                 }
-                    }
-                    throw
+                finally {
+                    Write-Verbose "=== Try/Catch finally block reached ==="
                 }
-                
                 Write-Verbose "=== Script completed successfully ==="
-                
                 EOT
             Octopus.Action.Script.ScriptSource = "Inline"
             Octopus.Action.Script.Syntax = "PowerShell"
