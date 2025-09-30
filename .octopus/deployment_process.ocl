@@ -7,8 +7,8 @@ step "run-a-script" {
         properties = {
             Octopus.Action.Script.ScriptBody = <<-EOT
                 Param(
-                    [switch]$EnableVerbose,
-                    [switch]$EnableTrace
+                    [switch]$EnableVerbose = $true,
+                    [switch]$EnableTrace   = $true
                 )
                 
                 # --- Debugging defaults ---
@@ -26,6 +26,14 @@ step "run-a-script" {
                 function Write-DebugObject {
                     param([Parameter(ValueFromPipeline=$true)]$Object, [int]$Depth = 3, [string]$Label = "Object")
                     try {
+                        $json = $Object | ConvertTo-Json -Depth $Depth -Compress
+                        Write-Verbose "$Label (json): $json"
+                    } catch {
+                        Write-Verbose "$Label (string): $Object"
+                    }
+                }
+                
+                try {
                         $json = $Object | ConvertTo-Json -Depth $Depth -Compress
                         Write-Verbose "$Label (json): $json"
                     } catch {
