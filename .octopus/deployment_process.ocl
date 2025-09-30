@@ -103,13 +103,14 @@ step "run-a-script" {
                     }
                 }
                 catch {
-                    Write-Error -Message "No deployments found for $projectName release $releaseVersion to $environmentName. Nothing to action."
-                    Write-Error ("ERROR: " + $_)
+                    Write-Warning -Message "No deployments found for $projectName release $releaseVersion to $environmentName. Nothing to action."
+                    Write-Warning ("Warning: " + $_)
                     if ($_.InvocationInfo) { Write-Error ("At: " + $_.InvocationInfo.PositionMessage) }
                     if ($_.Exception.Response -and ($_.Exception.Response -is [System.Net.HttpWebResponse])) {
                         $resp = $_.Exception.Response
                         Write-Error ("HTTP Status: " + [int]$resp.StatusCode + " " + $resp.StatusDescription)
                         try { $reader = New-Object System.IO.StreamReader($resp.GetResponseStream()); $body = $reader.ReadToEnd(); Write-Error ("Response body: " + $body) } catch {}
+                        throw
                     }
                     if ($_.Exception.Response -and ($_.Exception.Response -is [System.Net.HttpWebResponse])) {
                         $resp = $_.Exception.Response
@@ -125,8 +126,8 @@ step "run-a-script" {
                         } catch {
                             Write-Verbose ("Failed to read response body: " + $_.Exception.Message)
                         }
+                        throw
                     }
-                    throw
                 }
                 
                 finally {
