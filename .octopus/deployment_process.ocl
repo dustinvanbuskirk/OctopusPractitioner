@@ -70,12 +70,13 @@ step "run-a-script" {
                             Write-Output "There are $($cancelledTasks.Id.Count) Cancelled tasks for $projectName release $releaseVersion to $environmentName"
                             foreach ($task in $cancelledTasks)
                                 {
-                                    Write-Verbose "HTTP POST $octopusURL/api/tasks/$($task.Id)/cancel"
-                                    Write-Output "Cancelled task: $task.Id"
+                                    Write-Verbose "Cancelled task:"
+                                    Write-Verbose "$task"
                                 }
                         } else {
                             Write-Output "There is 1 Cancelled task for $projectName release $releaseVersion to $environmentName"
-                            Write-Verbose "Cancelled task: $cancelledTasks.Id"
+                            Write-Verbose "Cancelled task:"
+                            Write-Verbose "$cancelledTasks"
                         }
                 
                         # Filter last Cancelled task
