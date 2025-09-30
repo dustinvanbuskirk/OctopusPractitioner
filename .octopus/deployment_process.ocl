@@ -60,40 +60,49 @@ step "run-a-script" {
                 # Query API for Task Details, Filter and Process.
                 try {
                     # Fetch Cancelled tasks for project and release
-                    Write-Verbose -Message "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
+                    Write-Verbose  "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
                     $cancelledTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.State -match "Canceled" -and $_.Description -like "*release $releaseVersion*" }
                     
                     if ($cancelledTasks) {
-                    Write-Verbose -Message "List of Cancelled tasks: $cancelledTasks"
                 
-                    # Provide Cancelled task count
-                    Write-Output "There are $($cancelledTasks.Id.Count) Cancelled tasks for $projectName release $releaseVersion to $environmentName"
+                        # Provide Cancelled task count
+                        if ($cancelledTasks -is [array]) {
+                            Write-Output "There are $($cancelledTasks.Id.Count) Cancelled tasks for $projectName release $releaseVersion to $environmentName"
+                            foreach ($task in $cancelledTasks)
+                                {
+                                    Write-Verbose "HTTP POST $octopusURL/api/tasks/$($task.Id)/cancel"
+                                    Write-Output "Cancelled task: $task.Id"
+                                }
+                        } else {
+                            Write-Output "There is 1 Cancelled task for $projectName release $releaseVersion to $environmentName"
+                            Write-Verbose "Cancelled task: $cancelledTasks.Id"
+                        }
                 
-                    # Filter last Cancelled task
-                    $lastCancelledTask = ($cancelledTasks).Id | Sort-Object { [int]($_.Id -replace "[^0-9]", "") } -Descending | Select-Object -First 1
-                    Write-Output "The last Cancelled task for $projectName release $releaseVersion to $environmentName is $lastCancelledTask"
+                        # Filter last Cancelled task
+                        $lastCancelledTask = ($cancelledTasks).Id | Sort-Object { [int]($_.Id -replace "[^0-9]", "") } -Descending | Select-Object -First 1
+                        Write-Output "The last Cancelled task for $projectName release $releaseVersion to $environmentName is $lastCancelledTask"
                 
-                    # Fetch all tasks for project and release since last cancellation
-                    Write-Verbose -Message "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
-                    $allTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.Id -gt $lastCancelledTask -and $_.Description -like "*release $releaseVersion*" }
-                    Write-Output "There are $($allTasks.Id.Count) tasks to validate for $projectName release $releaseVersion to $environmentName"
+                        # Fetch all tasks for project and release since last cancellation
+                        Write-Verbose  "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
+                        $allTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.Id -gt $lastCancelledTask -and $_.Description -like "*release $releaseVersion*" }
+                        Write-Output "There are $($allTasks.Id.Count) tasks to validate for $projectName release $releaseVersion to $environmentName"
                 
-                    # Filter failed tasks
-                    Write-Verbose -Message "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
-                    $failedTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.Id -gt $lastCancelledTask -and $_.State -eq "Failed" -and $_.Description -like "*release $releaseVersion*" }
-                    Write-Output "There are $($failedTasks.Id.Count) failed tasks for $projectName release $releaseVersion to $environmentName"
+                        # Filter failed tasks
+                        Write-Verbose  "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
+                        $failedTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.Id -gt $lastCancelledTask -and $_.State -eq "Failed" -and $_.Description -like "*release $releaseVersion*" }
+                        Write-Output "There are $($failedTasks.Id.Count) failed tasks for $projectName release $releaseVersion to $environmentName"
                 
-                    # Fetch all tasks for project and release since last cancellation
-                    Write-Verbose -Message "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
-                    $allTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.Id -gt $lastCancelledTask -and $_.Description -like "*release $releaseVersion*" }
-                    Write-Output "There are $($allTasks.Id.Count) tasks to validate for $projectName release $releaseVersion to $environmentName"
+                        # Fetch all tasks for project and release since last cancellation
+                        Write-Verbose  "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
+                        $allTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.Id -gt $lastCancelledTask -and $_.Description -like "*release $releaseVersion*" }
+                        Write-Output "There are $($allTasks.Id.Count) tasks to validate for $projectName release $releaseVersion to $environmentName"
                 
-                    # Filter failed tasks
-                    Write-Verbose -Message "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
-                    $failedTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.Id -gt $lastCancelledTask -and $_.State -eq "Failed" -and $_.Description -like "*release $releaseVersion*" }
-                    Write-Output "There are $($failedTasks.Id.Count) failed tasks for $projectName release $releaseVersion to $environmentName"
+                        # Filter failed tasks
+                        Write-Verbose "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
+                        $failedTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.Id -gt $lastCancelledTask -and $_.State -eq "Failed" -and $_.Description -like "*release $releaseVersion*" }
+                        Write-Output "There are $($failedTasks.Id.Count) failed tasks for $projectName release $releaseVersion to $environmentName"
                 
-                    # Count failed tasks and prepare to cancel scheduled deployments if threshold met
+                        # Count failed tasks and prepare to cancel scheduled deployments if threshold met
                         if (($failedTasks.Id).Count -ge 3) {
                             # Filter scheduled tasks
                             $scheduledTasks = $allTasks | Where-Object { $_.State -eq "Queued" -and $_.HasBeenPickedUpByProcessor -eq $false -and $_.Name -eq "Deploy" -and $_.Description -like "*release $releaseVersion*" }
@@ -103,7 +112,7 @@ step "run-a-script" {
                                 #Cancel all scheduled tasks
                                 foreach ($task in $scheduledTasks)
                                 {
-                                    Write-Verbose -Message "HTTP POST $octopusURL/api/tasks/$($task.Id)/cancel"
+                                    Write-Verbose "HTTP POST $octopusURL/api/tasks/$($task.Id)/cancel"
                                     Write-Output "Cancelling task $(task.Id)"
                                     Invoke-RestMethod -Verbose -Method Post -Uri "$octopusURL/api/tasks/$($task.Id)/cancel" -Headers $header -UseBasicParsing | Out-Null
                                 }
@@ -116,11 +125,11 @@ step "run-a-script" {
                             break
                         }
                     } else {
-                        Write-Output -Message "No Cancelled tasks found for $projectName release $releaseVersion to $environmentName. Nothing to action."
+                        Write-Output "No Cancelled tasks found for $projectName release $releaseVersion to $environmentName. Nothing to action."
                     }
                 }
                 catch {
-                    Write-Output -Message "No Failed deployments found for $projectName release $releaseVersion to $environmentName. Nothing to action."
+                    Write-Output "No Failed deployments found for $projectName release $releaseVersion to $environmentName. Nothing to action."
                     Write-Warning ("Warning: " + $_)
                     if ($_.InvocationInfo) { Write-Error ("At: " + $_.InvocationInfo.PositionMessage) }
                     if ($_.Exception.Response -and ($_.Exception.Response -is [System.Net.HttpWebResponse])) {
