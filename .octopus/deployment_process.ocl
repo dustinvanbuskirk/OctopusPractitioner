@@ -3,17 +3,20 @@ step "run-a-script" {
 
     action {
         action_type = "Octopus.Script"
+        is_required = true
         properties = {
             Octopus.Action.Script.ScriptBody = <<-EOT
                 Param(
-                    [switch]$Trace
+                    [switch]$EnableVerbose,
+                    [switch]$EnableTrace
                 )
                 
                 # --- Debugging defaults ---
                 $ErrorActionPreference = "Stop"
-                $VerbosePreference = "Continue"
                 Set-StrictMode -Version Latest
-                if ($Trace) { Set-PSDebug -Trace 1 }
+                
+                if ($EnableVerbose) { $VerbosePreference = "Continue" } else { $VerbosePreference = "SilentlyContinue" }
+                if ($EnableTrace)   { Set-PSDebug -Trace 1 }
                 
                 Write-Verbose "=== Starting script: $(Split-Path -Leaf $PSCommandPath) ==="
                 Write-Verbose ("PowerShell Version: " + $PSVersionTable.PSVersion.ToString())
@@ -23,6 +26,14 @@ step "run-a-script" {
                 function Write-DebugObject {
                     param([Parameter(ValueFromPipeline=$true)]$Object, [int]$Depth = 3, [string]$Label = "Object")
                     try {
+                        $json = $Object | ConvertTo-Json -Depth $Depth -Compress
+                        Write-Verbose "$Label (json): $json"
+                    } catch {
+                        Write-Verbose "$Label (string): $Object"
+                    }
+                }
+                
+                try {
                         $json = $Object | ConvertTo-Json -Depth $Depth -Compress
                         Write-Verbose "$Label (json): $json"
                     } catch {
