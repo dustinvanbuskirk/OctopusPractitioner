@@ -5,6 +5,7 @@ step "run-octopus-deploy-runbook" {
         properties = {
             Octopus.Action.Template.Id = "ActionTemplates-5"
             Octopus.Action.Template.Version = "18"
+            Run.Runbook.Api.Key = "#{apiKey}"
             Run.Runbook.AutoApproveManualInterventions = "No"
             Run.Runbook.Base.Url = "#{Octopus.Web.ServerUri}"
             Run.Runbook.CancelInSeconds = "1800"
