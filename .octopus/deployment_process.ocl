@@ -7,9 +7,21 @@ step "run-a-script" {
         properties = {
             Octopus.Action.Script.ScriptBody = <<-EOT
                 Param(
+                    # Developer Parameters
                     [switch]$EnableVerbose = $true,
                     [switch]$EnableTrace   = $false,
-                    [switch]$Threshold   = 3
+                
+                    # Octopus Account Parameters
+                    [string]$apiKey     = "#{apiKey}",
+                    [string]$octopusUrl = "#{octopusUrl}",
+                
+                    #Script Parameters
+                    [int]$Threshold          = 3,
+                    [string]$environmentId   = "#{Octopus.Environment.Id}",
+                    [string]$environmentName = "#{Octopus.Environment.Name}",
+                    [string]$projectId       = "#{Octopus.Project.Id}",
+                    [string]$projectName     = "#{Octopus.Project.Name}",
+                    [string]$releaseVersion  = "#{Octopus.Release.Number}"
                 )
                 
                 # --- Debugging defaults ---
@@ -82,19 +94,8 @@ step "run-a-script" {
                 
                 $ErrorActionPreference = "Stop";
                 
-                # Connection Variables
-                $apiKey = "#{apiKey}"
-                $octopusUrl = "#{octopusUrl}"
-                
                 # Do Not Change
                 $Header =  @{ "X-Octopus-ApiKey" = $apiKey }
-                
-                # Release variables
-                $environmentId = "#{Octopus.Environment.Id}"
-                $environmentName = "#{Octopus.Environment.Name}"
-                $projectId = "#{Octopus.Project.Id}"
-                $projectName = "#{Octopus.Project.Name}"
-                $releaseVersion = "#{Octopus.Release.Number}"
                 
                 # Query API for Task Details, Filter and Process.
                 try {
