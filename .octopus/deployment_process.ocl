@@ -152,10 +152,10 @@ step "run-a-script" {
                                     Write-Output "No scheduled deployments found for $projectName release $releaseVersion to $environmentName. Nothing to cancel."
                                 }    
                             } else {
-                                Write-Output "Number of Failed deployments for $projectName release $releaseVersion to $env is below the threshold (found $($failedTasks.Count), threshold is $Threshold). No scheduled tasks will be cancelled."
+                                Write-Output "Number of Failed deployments for $projectName release $releaseVersion to $environmentName is below the threshold (found $($failedTasks.Count), threshold is $Threshold). No scheduled tasks will be cancelled."
                             }
                         } else {
-                            Write-Output "Number of Failed deployments for $projectName release $releaseVersion to $env is below the threshold (found 1, threshold is $Threshold). No scheduled tasks will be cancelled."
+                            Write-Output "Number of Failed deployments for $projectName release $releaseVersion to $environmentName is below the threshold (found 1, threshold is $Threshold). No scheduled tasks will be cancelled."
                         }
                     } else {
                         Write-Output "No Cancelled tasks found for $projectName release $releaseVersion to $environmentName. Nothing to action."
