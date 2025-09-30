@@ -51,15 +51,9 @@ step "run-a-script" {
                 $Header =  @{ "X-Octopus-ApiKey" = $apiKey }
                 
                 # Release variables
-                $projectName = "#{Octopus.Project.Name}"
+                $projectId = "#{Octopus.Project.Id}"
                 $releaseVersion = "#{Octopus.Release.Number}"
-                $environmentName = "#{Octopus.Environment.Name}"
-                
-                # Set variables to hold Id values
-                Write-Verbose "HTTP GET $octopusUrl/api/projects?name=$projectName"
-                $projectId = ((Invoke-RestMethod -Verbose -Method Get -Uri "$octopusUrl/api/projects?name=$projectName" -Headers $header).Items).Id
-                Write-Verbose "HTTP GET $octopusUrl/api/Environments?name=$environmentName"
-                $environmentId = ((Invoke-RestMethod -Verbose -Method Get -Uri "$octopusUrl/api/Environments?name=$environmentName" -Headers $header).Items).Id
+                $environmentId = "#{Octopus.Environment.Id}"
                 
                 # Query API for Task Details, Filter and Process.
                 try {
