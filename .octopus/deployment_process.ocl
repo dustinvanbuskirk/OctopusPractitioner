@@ -62,11 +62,12 @@ step "run-a-script" {
                     # Fetch cancelled tasks for project and release
                 Write-Verbose "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
                     $cancelledTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.State -match "Cancel" -and $_.Description -like "*release $releaseVersion*" }
-                    Write-Output "There are $($cancelledTasks.Count) cancelled tasks for $projectName release $releaseVersion to $environmentName"
-                
+                    Write-Output "There are $(($cancelledTasks.Id).Count) cancelled tasks for $projectName release $releaseVersion to $environmentName"
+                    if(($cancelledTasks.Id).Count -ge 0){
                     # Filter last cancelled task
                     $lastCancelledTask = ($cancelledTasks).Id | Sort-Object { [int]($_.Id -replace "[^0-9]", "") } -Descending | Select-Object -First 1
                     Write-Output "The last cancelled task for $projectName release $releaseVersion to $environmentName is $lastCancelledTask"
+                    }
                 
                     # Fetch all tasks for project and release since last cancellation
                 Write-Verbose "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
@@ -79,8 +80,7 @@ step "run-a-script" {
                     Write-Output "There are $($failedTasks.Count) failed tasks for $projectName release $releaseVersion to $environmentName"
                 
                     # Count failed tasks and prepare to cancel scheduled deployments if threshold met
-                    If(($failedTasks.Id).Count -ge 3)
-                    {
+                    if(($failedTasks.Id).Count -ge 3){
                         # Filter scheduled tasks
                         $scheduledTasks = $allTasks | Where-Object { $_.State -eq "Queued" -and $_.HasBeenPickedUpByProcessor -eq $false -and $_.Name -eq "Deploy" -and $_.Description -like "*release $releaseVersion*" }
                         # Count scheduled tasks and cancel any that are found
@@ -96,8 +96,7 @@ step "run-a-script" {
                             }
                         }
                     }
-                    Else
-                    {
+                    else{
                         Write-Output "Number of failed deployments for $projectName release $releaseVersion to $env is below the threshold (found $($failedTasks.Count), threshold is 3). No scheduled tasks will be cancelled."
                         break
                     }
