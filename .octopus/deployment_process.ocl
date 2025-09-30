@@ -37,17 +37,9 @@ step "run-a-script" {
                 }
                 
                 try {
-                 
-                
-                # STRAY_CATCH_REMOVED # catch {
                         Write-Verbose "$Label (string): $Object"
                     }
                 
-                
-                
-                
-                
-                {
                 $ErrorActionPreference = "Stop";
                 
                 # Connection Variables
@@ -67,10 +59,9 @@ step "run-a-script" {
                 $projectId = ((Invoke-RestMethod -Verbose -Method Get -Uri "$octopusUrl/api/projects?name=$projectName" -Headers $header).Items).Id
                 Write-Verbose "HTTP GET $octopusUrl/api/Environments?name=$environmentName"
                 $environmentId = ((Invoke-RestMethod -Verbose -Method Get -Uri "$octopusUrl/api/Environments?name=$environmentName" -Headers $header).Items).Id
-                }
                 
                 # Get tasks
-                {
+                try {
                     # Fetch cancelled tasks for project and release
                 Write-Verbose "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
                     $cancelledTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.State -match "Cancel" -and $_.Description -like "*release $releaseVersion*" }
@@ -114,12 +105,12 @@ step "run-a-script" {
                         break
                     }
                 }
-                # STRAY_CATCH_REMOVED # catch {
+                catch {
                     Write-Error -Message "No deployments found for $projectName release $releaseVersion to $environmentName. Nothing to action."
                     break
                 }
                 
-                # STRAY_CATCH_REMOVED # catch {
+                catch {
                     Write-Error ("ERROR: " + $_)
                     if ($_.InvocationInfo) { Write-Error ("At: " + $_.InvocationInfo.PositionMessage) }
                     if ($_.Exception.Response -and ($_.Exception.Response -is [System.Net.HttpWebResponse])) {
@@ -130,8 +121,6 @@ step "run-a-script" {
                     throw
                 }
                 
-                
-                }
                 catch {
                     Write-Error ("ERROR: " + $_)
                     if ($_.InvocationInfo) { Write-Error ("At: " + $_.InvocationInfo.PositionMessage) }
