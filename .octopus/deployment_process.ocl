@@ -80,9 +80,6 @@ step "run-a-script" {
                     Write-Verbose "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
                     $failedTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.Id -gt $lastCancelledTask -and $_.State -eq "Failed" -and $_.Description -like "*release $releaseVersion*" }
                     Write-Output "There are $($failedTasks.Count) failed tasks for $projectName release $releaseVersion to $environmentName"
-                    } else {
-                        Write-Warning -Message "No !Cancelled! tasks found for $projectName release $releaseVersion to $environmentName. Nothing to action."
-                    }
                 
                     # Fetch all tasks for project and release since last cancellation
                     Write-Verbose "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
@@ -95,29 +92,32 @@ step "run-a-script" {
                     Write-Output "There are $($failedTasks.Count) failed tasks for $projectName release $releaseVersion to $environmentName"
                 
                     # Count failed tasks and prepare to cancel scheduled deployments if threshold met
-                    if (($failedTasks.Id).Count -ge 3) {
-                        # Filter scheduled tasks
-                        $scheduledTasks = $allTasks | Where-Object { $_.State -eq "Queued" -and $_.HasBeenPickedUpByProcessor -eq $false -and $_.Name -eq "Deploy" -and $_.Description -like "*release $releaseVersion*" }
-                        # Count scheduled tasks and cancel any that are found
-                        if ($scheduledTasks.Count -eq 0) {
-                            Write-Output "No scheduled deployments found for $projectName release $releaseVersion to $environmentName. Nothing to cancel."
-                        } else {
-                            Write-Output "Cancelling all scheduled deployments for $projectName release $releaseVersion to $environmentName"
-                            #Cancel all scheduled tasks
-                            foreach ($task in $scheduledTasks)
-                            {
-                                Write-Verbose "HTTP POST $octopusURL/api/tasks/$($task.Id)/cancel"
-                                Invoke-RestMethod -Verbose -Method Post -Uri "$octopusURL/api/tasks/$($task.Id)/cancel" -Headers $header -UseBasicParsing | Out-Null
+                        if (($failedTasks.Id).Count -ge 3) {
+                            # Filter scheduled tasks
+                            $scheduledTasks = $allTasks | Where-Object { $_.State -eq "Queued" -and $_.HasBeenPickedUpByProcessor -eq $false -and $_.Name -eq "Deploy" -and $_.Description -like "*release $releaseVersion*" }
+                            # Count scheduled tasks and cancel any that are found
+                            if ($scheduledTasks.Count -eq 0) {
+                                Write-Output "No scheduled deployments found for $projectName release $releaseVersion to $environmentName. Nothing to cancel."
+                            } else {
+                                Write-Output "Cancelling all scheduled deployments for $projectName release $releaseVersion to $environmentName"
+                                #Cancel all scheduled tasks
+                                foreach ($task in $scheduledTasks)
+                                {
+                                    Write-Verbose "HTTP POST $octopusURL/api/tasks/$($task.Id)/cancel"
+                                    Invoke-RestMethod -Verbose -Method Post -Uri "$octopusURL/api/tasks/$($task.Id)/cancel" -Headers $header -UseBasicParsing | Out-Null
+                                }
                             }
                         }
-                    }
-                    else{
-                        Write-Output "Number of failed deployments for $projectName release $releaseVersion to $env is below the threshold (found $($failedTasks.Count), threshold is 3). No scheduled tasks will be cancelled."
-                        break
+                        else{
+                            Write-Output "Number of Failed deployments for $projectName release $releaseVersion to $env is below the threshold (found $($failedTasks.Count), threshold is 3). No scheduled tasks will be cancelled."
+                            break
+                        }
+                    } else {
+                        Write-Warning -Message "No !Cancelled! tasks found for $projectName release $releaseVersion to $environmentName. Nothing to action."
                     }
                 }
                 catch {
-                    Write-Warning -Message "No !Failed! deployments found for $projectName release $releaseVersion to $environmentName. Nothing to action."
+                    Write-Warning -Message "No Failed deployments found for $projectName release $releaseVersion to $environmentName. Nothing to action."
                     Write-Warning ("Warning: " + $_)
                     if ($_.InvocationInfo) { Write-Error ("At: " + $_.InvocationInfo.PositionMessage) }
                     if ($_.Exception.Response -and ($_.Exception.Response -is [System.Net.HttpWebResponse])) {
