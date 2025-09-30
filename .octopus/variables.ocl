@@ -31,3 +31,7 @@ variable "Project.Database.Report.Path" {
 variable "Project.Database.Server.Name" {
     value "(localdb)\\MSSQLLocalDB" {}
 }
+
+variable "octopusUrl" {
+    value "https://dvb.octopus.app" {}
+}
