@@ -8,7 +8,7 @@ step "run-a-script" {
             Octopus.Action.Script.ScriptBody = <<-EOT
                 Param(
                     [switch]$EnableVerbose = $true,
-                    [switch]$EnableTrace   = $true
+                    [switch]$EnableTrace   = $false
                 )
                 
                 # --- Debugging defaults ---
@@ -61,7 +61,7 @@ step "run-a-script" {
                 try {
                     # Fetch Cancelled tasks for project and release
                     Write-Verbose -Message "HTTP GET $octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId"
-                    $cancelledTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.State -match "Cancel" -and $_.Description -like "*release $releaseVersion*" }
+                    $cancelledTasks = (Invoke-RestMethod -Verbose -Method Get -Uri "$octopusURL/api/tasks?skip=0&take=1000&environment=$environmentId&project=$projectId" -Headers $header).Items | Where-Object { $_.State -match "Canceled" -and $_.Description -like "*release $releaseVersion*" }
                     
                     if ($cancelledTasks) {
                     Write-Verbose -Message "List of Cancelled tasks: $cancelledTasks"
@@ -104,6 +104,7 @@ step "run-a-script" {
                                 foreach ($task in $scheduledTasks)
                                 {
                                     Write-Verbose -Message "HTTP POST $octopusURL/api/tasks/$($task.Id)/cancel"
+                                    Write-Output "Cancelling task $(task.Id)"
                                     Invoke-RestMethod -Verbose -Method Post -Uri "$octopusURL/api/tasks/$($task.Id)/cancel" -Headers $header -UseBasicParsing | Out-Null
                                 }
                             } else {
