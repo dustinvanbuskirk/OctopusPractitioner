@@ -259,7 +259,7 @@ step "generate-what-if-report" {
         properties = {
             Database.Deploy.ConnectionString = "#{Project.Connection.String}"
             Database.Deploy.Package = "{\"PackageId\":\"Trident.Database\",\"FeedId\":\"octopus-server-built-in\"}"
-            Database.Deploy.PathToDBUpExe = ".\\Octopus.Trident.Database.DbUpp"
+            Database.Deploy.PathToDBUpExe = ".\\Octopus.Trident.Database.DbUp"
             Database.Deploy.ReportPath = "#{Project.Database.Report.Path}"
             Database.Deploy.WhatIf = "True"
             Octopus.Action.Template.Id = "ActionTemplates-4"
